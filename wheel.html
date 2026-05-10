@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Колесо Фортуны | ArtTech</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        .header {
+            text-align: center; padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(107, 78, 230, 0.1) 0%, rgba(224, 79, 191, 0.1) 100%);
+            border-radius: 20px; margin-bottom: 40px;
+            border: 1px solid rgba(107, 78, 230, 0.3);
+        }
+
+        .logo {
+            font-size: 48px; font-weight: 700;
+            background: linear-gradient(135deg, #6B4EE6 0%, #E04FBF 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 10px;
+        }
+
+        .subtitle { font-size: 14px; color: #888; letter-spacing: 2px; text-transform: uppercase; }
+        .event-title {
+            font-size: 32px; font-weight: 700; margin-top: 20px;
+            background: linear-gradient(135deg, #fff 0%, #6B4EE6 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* Modal & Form */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.9); display: flex; align-items: center;
+            justify-content: center; z-index: 1000; backdrop-filter: blur(10px);
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px; border-radius: 20px; border: 2px solid rgba(107, 78, 230, 0.5);
+            max-width: 450px; width: 90%; box-shadow: 0 20px 60px rgba(107, 78, 230, 0.3);
+        }
+
+        .modal h2 {
+            font-size: 28px; margin-bottom: 10px; text-align: center;
+            background: linear-gradient(135deg, #6B4EE6 0%, #E04FBF 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .modal p { text-align: center; color: #888; margin-bottom: 30px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #fff; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 15px; border: 2px solid rgba(107, 78, 230, 0.3);
+            border-radius: 10px; background: rgba(255, 255, 255, 0.05);
+            color: #fff; font-size: 16px; transition: all 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: #6B4EE6; box-shadow: 0 0 20px rgba(107, 78, 230, 0.3); }
+
+        .btn-primary {
+            width: 100%; padding: 18px; background: linear-gradient(135deg, #6B4EE6 0%, #E04FBF 100%);
+            border: none; border-radius: 10px; color: #fff; font-size: 18px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(107, 78, 230, 0.4); }
+        .btn-primary:active { transform: translateY(0); }
+
+        /* Wheel */
+        .wheel-container { display: none; text-align: center; padding: 40px 20px; }
+        .wheel-wrapper { position: relative; max-width: 600px; margin: 0 auto; }
+        
+        .wheel { width: 100%; max-width: 600px; height: 600px; position: relative; margin: 0 auto; }
+        
+        .wheel-svg {
+            width: 100%; height: 100%;
+            transform-origin: 50% 50%;
+            filter: drop-shadow(0 0 40px rgba(107, 78, 230, 0.5));
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .wheel-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #6B4EE6 0%, #E04FBF 100%);
+            border-radius: 50%; z-index: 10; display: flex; align-items: center;
+            justify-content: center; box-shadow: 0 0 30px rgba(107, 78, 230, 0.6); border: 4px solid #fff;
+        }
+
+        .wheel-pointer {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 50px;
+            background: linear-gradient(135deg, #E04FBF 0%, #6B4EE6 100%);
+            clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 20;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .spin-btn {
+            margin-top: 40px; padding: 20px 60px; font-size: 24px;
+            background: linear-gradient(135deg, #6B4EE6 0%, #E04FBF 100%);
+            border: none; border-radius: 50px; color: #fff; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; text-transform: uppercase;
+            letter-spacing: 2px; box-shadow: 0 10px 40px rgba(107, 78, 230, 0.4);
+        }
+        .spin-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 50px rgba(107, 78, 230, 0.6); }
+        .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Result Modal */
+        .result-modal {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.95); z-index: 2000; align-items: center;
+            justify-content: center; backdrop-filter: blur(10px);
+        }
+
+        .result-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 60px 40px; border-radius: 30px; border: 3px solid rgba(107, 78, 230, 0.5);
+            text-align: center; max-width: 500px; width: 90%;
+            box-shadow: 0 0 60px rgba(107, 78, 230, 0.4); animation: resultAppear 0.5s ease;
+        }
+
+        @keyframes resultAppear {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-icon { font-size: 80px; margin-bottom: 20px; }
+        .result-title {
+            font-size: 32px; margin-bottom: 15px;
+            background: linear-gradient(135deg, #6B4EE6 0%, #E04FBF 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .result-prize {
+            font-size: 48px; font-weight: 700; color: #E04FBF; margin: 20px 0;
+            text-shadow: 0 0 30px rgba(224, 79, 191, 0.5);
+        }
+        .result-text { font-size: 18px; color: #888; margin-bottom: 30px; line-height: 1.6; }
+
+        .confetti {
+            position: fixed; width: 10px; height: 10px; background: #6B4EE6;
+            animation: confetti-fall 3s linear forwards;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .wheel { height: 400px; max-width: 400px; }
+            .event-title { font-size: 24px; }
+            .logo { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">artTech</div>
+            <div class="subtitle">школа дизайна</div>
+            <h1 class="event-title">КОЛЕСО ФОРТУНЫ для участников Terra</h1>
+        </div>
+
+        <div class="wheel-container" id="wheelContainer">
+            <div class="wheel-wrapper">
+                <div class="wheel-pointer"></div>
+                <div class="wheel">
+                    <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 600 600"></svg>
+                    <div class="wheel-center">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <button class="spin-btn" id="spinBtn">КРУТИТЬ КОЛЕСО</button>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="modal-overlay" id="formModal">
+        <div class="modal">
+            <h2>🎁 Участвуй в розыгрыше</h2>
+            <p>Оставь контакты и крути колесо фортуны!<br>Гранты до 30 000 ₽</p>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="userName">Ваше имя</label>
+                    <input type="text" id="userName" name="name" required placeholder="Введите имя">
+                </div>
+                <div class="form-group">
+                    <label for="userPhone">Телефон</label>
+                    <input type="tel" id="userPhone" name="phone" required placeholder="+7 (___) ___-__-__">
+                </div>
+                <button type="submit" class="btn-primary">Получить шанс выиграть</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <div class="result-icon">🎉</div>
+            <h2 class="result-title">Поздравляем!</h2>
+            <div class="result-prize" id="resultPrize">30 000 ₽</div>
+            <p class="result-text" id="resultText">Ваш грант на обучение в ArtTech!</p>
+            <button class="btn-primary" onclick="window.location.href='https://arttech-school.ru/chelyabinsk'">Посмотреть школу</button>
+        </div>
+    </div>
+
+    <script>
+    // Ждем полной загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✅ DOM загружен, скрипт запущен');
+
+        // Конфигурация призов
+        const prizes = [
+            { label: '30 000 ₽', value: 30000, color: '#E04FBF', probability: 5 },
+            { label: '5 000 ₽', value: 25000, color: '#6B4EE6', probability: 20 },
+            { label: '7 000 ₽', value: 20000, color: '#9B59B6', probability: 25 },
+            { label: '3 000 ₽', value: 15000, color: '#3498DB', probability: 0 },
+            { label: '10 000 ₽', value: 10000, color: '#1ABC9C', probability: 50 }
+        ];
+
+        let userData = {};
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        // Элементы
+        const formModal = document.getElementById('formModal');
+        const wheelContainer = document.getElementById('wheelContainer');
+        const registrationForm = document.getElementById('registrationForm');
+        const wheelSvg = document.getElementById('wheelSvg');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultModal = document.getElementById('resultModal');
+        const resultPrize = document.getElementById('resultPrize');
+        const userNameInput = document.getElementById('userName');
+        const userPhoneInput = document.getElementById('userPhone');
+
+        // Маска телефона
+        userPhoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value[0] === '7' || value[0] === '8') value = value.substring(1);
+                let formatted = '+7';
+                if (value.length > 0) formatted += ' (' + value.substring(0, 3);
+                if (value.length >= 3) formatted += ') ' + value.substring(3, 6);
+                if (value.length >= 6) formatted += '-' + value.substring(6, 8);
+                if (value.length >= 8) formatted += '-' + value.substring(8, 10);
+                e.target.value = formatted;
+            }
+        });
+
+        function drawWheel() {
+    const cx = 300, cy = 300, r = 280;
+    const segAngle = 360 / prizes.length;
+    let html = '';
+
+    prizes.forEach((prize, i) => {
+        const startA = (i * segAngle - 90) * Math.PI / 180;
+        const endA = ((i + 1) * segAngle - 90) * Math.PI / 180;
+        const x1 = cx + r * Math.cos(startA);
+        const y1 = cy + r * Math.sin(startA);
+        const x2 = cx + r * Math.cos(endA);
+        const y2 = cy + r * Math.sin(endA);
+        const largeArc = segAngle > 180 ? 1 : 0;
+
+        // Визуальные стили для главного приза
+        const stroke = prize.isJackpot ? '#FFD700' : '#fff';
+        const strokeWidth = prize.isJackpot ? 4 : 2;
+        const filter = prize.isJackpot ? 'url(#glow)' : '';
+        
+        // Текст: крупнее и с иконкой для джекпота
+        const fontSize = prize.isJackpot ? 28 : 24;
+        const fontWeight = prize.isJackpot ? '900' : 'bold';
+        const textFill = prize.isJackpot ? '#000' : '#fff';
+        const prizeLabel = prize.isJackpot ? '👑 ' + prize.label : prize.label;
+
+        const textA = (i * segAngle + segAngle / 2 - 90) * Math.PI / 180;
+        const tr = r * 0.65;
+        const tx = cx + tr * Math.cos(textA);
+        const ty = cy + tr * Math.sin(textA);
+
+        html += `
+            <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" 
+                  fill="${prize.color}" 
+                  stroke="${stroke}" 
+                  stroke-width="${strokeWidth}"
+                  filter="${filter}"/>
+            <text x="${tx}" y="${ty}" 
+                  fill="${textFill}" 
+                  font-size="${fontSize}" 
+                  font-weight="${fontWeight}" 
+                  text-anchor="middle" 
+                  dominant-baseline="middle"
+                  transform="rotate(${i * segAngle + segAngle / 2}, ${tx}, ${ty})"
+                  style="text-shadow: ${prize.isJackpot ? '0 0 10px rgba(255,215,0,0.8)' : 'none'}">
+                ${prizeLabel}
+            </text>
+        `;
+    });
+
+    // Добавляем свечение для джекпота
+    html += `
+        <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+    `;
+    
+    wheelSvg.innerHTML = html;
+}
+
+        // Выбор приза по вероятности
+        function getRandomPrize() {
+            const rand = Math.random() * 100;
+            let cum = 0;
+            for (let p of prizes) {
+                cum += p.probability;
+                if (rand <= cum) return p;
+            }
+            return prizes[0];
+        }
+
+        // Вращение колеса
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'КРУТИМ...';
+
+            const prize = getRandomPrize();
+            const idx = prizes.indexOf(prize);
+            const segAngle = 360 / prizes.length;
+
+            const centerAngle = idx * segAngle + segAngle / 2;
+            const jitter = (Math.random() - 0.5) * segAngle * 0.6;
+            const extraSpins = 5 + Math.floor(Math.random() * 3);
+
+            const newRotation = currentRotation + (extraSpins * 360) - centerAngle + jitter;
+            
+            wheelSvg.style.transform = `rotate(${newRotation}deg)`;
+            currentRotation = newRotation;
+
+            setTimeout(() => {
+                showResult(prize);
+                isSpinning = false;
+            }, 5500);
+        }
+
+        // Показ результата
+        function showResult(prize) {
+            resultPrize.textContent = prize.label;
+            resultModal.style.display = 'flex';
+            createConfetti();
+            sendToGoogleSheets(prize);
+        }
+
+        // Конфетти
+        function createConfetti() {
+            const colors = ['#6B4EE6', '#E04FBF', '#9B59B6', '#3498DB', '#1ABC9C'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.left = Math.random() * 100 + 'vw';
+                    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(c);
+                    setTimeout(() => c.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        function closeResult() {
+            resultModal.style.display = 'none';
+        }
+
+        // Отправка в Google Sheets
+async function sendToGoogleSheets(prize) {
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQx_GYK1DJ0ZTQu3TAy2i3JcaPtgQvISQHRwysocD6KyhyjR1D2ExwQIDxxsNmSJeM4w/exec';
+    
+    // Убираем "+" и все нецифровые символы из телефона
+    const cleanPhone = userData.phone.replace(/\D/g, '');
+
+    const data = {
+        name: userData.name,
+        phone: cleanPhone,  // Теперь без плюса
+        prize: prize.label,
+        prizeValue: prize.value,
+        date: new Date().toLocaleString('ru-RU'),
+        event: 'Terra - Колесо Фортуны'
+    };
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        console.log('✅ Данные отправлены в Google Sheets');
+    } catch (e) {
+        console.error('❌ Ошибка отправки:', e);
+    }
+}
+
+        // 🔥 ОБРАБОТКА ФОРМЫ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+        registrationForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Блокируем стандартную отправку формы
+            e.stopPropagation();
+            
+            try {
+                const name = userNameInput.value.trim();
+                const phone = userPhoneInput.value.trim();
+
+                if (!name || !phone) {
+                    alert('Пожалуйста, заполните все поля');
+                    return;
+                }
+
+                userData = { name, phone };
+                console.log('📝 Данные сохранены:', userData);
+
+                // Скрываем форму, показываем колесо
+                formModal.style.display = 'none';
+                wheelContainer.style.display = 'block';
+                
+                // Плавный скролл к колесу
+                setTimeout(() => {
+                    wheelContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+
+            } catch (error) {
+                console.error('❌ Ошибка при обработке формы:', error);
+                alert('Произошла ошибка. Попробуйте обновить страницу.');
+            }
+        });
+
+        // Кнопка вращения
+        spinBtn.addEventListener('click', spinWheel);
+
+        // Инициализация
+        drawWheel();
+        console.log(' Колесо готово к работе');
+    });
+</script>
+</body>
+</html>

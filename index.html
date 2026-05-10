@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtTech - Школа дизайна в Челябинске</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 30px;
+            display: block;
+        }
+
+        h1 {
+            color: #6B4EE6;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .description {
+            color: #555;
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 18px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-vk {
+            background: #4C75A3;
+            color: white;
+        }
+
+        .btn-vk:hover {
+            background: #3d5f85;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 117, 163, 0.4);
+        }
+
+        .btn-telegram {
+            background: #0088cc;
+            color: white;
+        }
+
+        .btn-telegram:hover {
+            background: #006699;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 136, 204, 0.4);
+        }
+
+        .btn-site {
+            background: #6B4EE6;
+            color: white;
+        }
+
+        .btn-site:hover {
+            background: #5536c4;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107, 78, 230, 0.4);
+        }
+
+        .btn-grant {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .btn-grant:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.6em;
+            }
+            
+            .description {
+                font-size: 1em;
+            }
+            
+            .container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="logo.png" alt="ArtTech Logo" class="logo">
+        
+        <h1>Привет! Это школа дизайна ArtTech в городе Челябинск.</h1>
+        
+        <p class="description">
+            Мы помогаем освоить творческую профессию в сфере дизайна, 
+            либо помогаем вам с классным хобби для личных задач.
+        </p>
+        
+        <div class="buttons">
+            <a href="https://vk.com/arttech_chlb" class="btn btn-vk" target="_blank">
+                ВКонтакте
+            </a>
+            <a href="https://t.me/arttech_chlb" class="btn btn-telegram" target="_blank">
+                Телеграм
+            </a>
+            <a href="https://arttech-school.ru/chelyabinsk" class="btn btn-site" target="_blank">
+                Сайт школы
+            </a>
+            <a href="wheel.html" class="btn btn-grant">
+                🎁 Выиграть грант на обучение
+            </a>
+        </div>
+    </div>
+</body>
+</html>
