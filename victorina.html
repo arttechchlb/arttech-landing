@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Викторина | ArtTech</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #1a1a2e;
+            --primary: #6B4EE6;
+            --secondary: #E04FBF;
+            --text: #ffffff;
+            --text-muted: #8888aa;
+            --success: #1ABC9C;
+            --error: #E74C3C;
+            --radius: 16px;
+            --shadow: 0 8px 30px rgba(107, 78, 230, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #16213e 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid rgba(107, 78, 230, 0.3);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            padding: 24px 20px 16px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(107, 78, 230, 0.15) 0%, rgba(224, 79, 191, 0.15) 100%);
+            border-bottom: 1px solid rgba(107, 78, 230, 0.2);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .quiz-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .content { padding: 24px 20px; }
+
+        /* Screens */
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Progress Bar */
+        .progress-container {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .question-counter {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-align: right;
+        }
+
+        /* Question */
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed rgba(107, 78, 230, 0.4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+            text-align: center;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .image-placeholder img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        /* Options */
+        .options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .option-btn {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            position: relative;
+        }
+        .option-btn:hover:not(:disabled) { background: rgba(107, 78, 230, 0.15); border-color: var(--primary); }
+        .option-btn:disabled { cursor: default; opacity: 0.7; }
+        .option-btn.correct { background: rgba(26, 188, 156, 0.2); border-color: var(--success); }
+        .option-btn.wrong { background: rgba(231, 76, 60, 0.2); border-color: var(--error); }
+        .option-btn .icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 20px; }
+
+        /* Fact Box */
+        .fact-box {
+            background: rgba(107, 78, 230, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 14px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .fact-box.show { display: block; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fact-title { font-weight: 600; margin-bottom: 4px; color: var(--secondary); }
+        .fact-text { font-size: 14px; color: var(--text-muted); line-height: 1.4; }
+
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(107, 78, 230, 0.4); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 12px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); border-color: #fff; }
+
+        /* Welcome & Result Screens */
+        .welcome-icon, .result-icon { font-size: 64px; margin-bottom: 16px; text-align: center; }
+        .welcome-text, .result-text { text-align: center; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
+        .result-score {
+            font-size: 48px;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 10px 0;
+        }
+        .result-rank { text-align: center; font-size: 20px; font-weight: 600; margin-bottom: 24px; }
+
+        /* Mobile Optimizations */
+        @media (max-width: 380px) {
+            .content { padding: 20px 16px; }
+            .question-text { font-size: 18px; }
+            .option-btn { padding: 14px; font-size: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="logo">artTech</div>
+        <div class="quiz-title">Дизайн-викторина</div>
+    </div>
+
+    <div class="content">
+        <!-- Экран приветствия -->
+        <div id="welcome-screen" class="screen active">
+            <div class="welcome-icon">🧠</div>
+            <h2 style="text-align:center; margin-bottom:12px; font-size:24px;">Насколько вы знаете дизайн?</h2>
+            <p class="welcome-text">6 вопросов о легендарных логотипах, брендах и дизайнерских фактах. Проверьте себя и узнайте интересные истории!</p>
+            <button class="btn-primary" onclick="startQuiz()">Начать викторину</button>
+        </div>
+
+        <!-- Экран вопроса -->
+        <div id="quiz-screen" class="screen">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="question-counter" id="question-counter">Вопрос 1 из 6</div>
+            
+            <div class="image-placeholder" id="question-image">
+                <img src="" alt="Вопрос" id="q-image">
+            </div>
+
+            <h3 class="question-text" id="question-text">Вопрос...</h3>
+            
+            <div class="options" id="options-container"></div>
+
+            <div class="fact-box" id="fact-box">
+                <div class="fact-title">💡 Интересный факт</div>
+                <div class="fact-text" id="fact-text"></div>
+            </div>
+
+            <button class="btn-primary" id="next-btn" disabled onclick="nextQuestion()">Далее</button>
+        </div>
+
+        <!-- Экран результатов -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon">🎉</div>
+            <h2 style="text-align:center; margin-bottom:8px; font-size:26px;">Викторина пройдена!</h2>
+            <div class="result-score" id="result-score">0/6</div>
+            <div class="result-rank" id="result-rank">Звание</div>
+            <p class="result-text" id="result-message">Сообщение</p>
+            
+            <a href="https://arttechchlb.github.io/arttech-landing/wheel.html" class="btn-primary" style="text-decoration:none;">Крутить колесо фортуны</a>
+            <button class="btn-secondary" onclick="restartQuiz()">Пройти ещё раз</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Данные викторины
+    const quizData = [
+        {
+            id: 1,
+            question: "Кто был изображён на первом логотипе Apple (1976)?",
+            image: "newton.jpg",
+            fact: "На первом логотипе Apple был Исаак Ньютон под яблоней. В 1977 году его заменили на минималистичное надкушенное яблоко.",
+            options: [
+                { text: "Стив Джобс", correct: false },
+                { text: "Исаак Ньютон", correct: true },
+                { text: "Альберт Эйнштейн", correct: false }
+            ]
+        },
+        {
+            id: 2,
+            question: "Сколько заплатили за логотип Nike Swoosh в 1971 году?",
+            image: "nike.jpg",
+            fact: "Студентка Кэролин Дэвидсон нарисовала его за $35. Сейчас этот логотип оценивается в миллиарды долларов.",
+            options: [
+                { text: "$35", correct: true },
+                { text: "$350", correct: false },
+                { text: "$3 500", correct: false }
+            ]
+        },
+        {
+            id: 3,
+            question: "Угадай оригинал логотипа Apple:",
+            image: "apple.jpg",
+            fact: "Надкус всегда справа! Это сделано, чтобы логотип не путали с вишней, помидором или другими фруктами.",
+            options: [
+                { text: "Надкус справа", correct: true },
+                { text: "Надкус слева", correct: false },
+                { text: "Без надкуса", correct: false }
+            ]
+        },
+        {
+            id: 4,
+            question: "Угадай оригинал логотипа Adidas:",
+            image: "adidas.jpg",
+            fact: "Правильный логотип Adidas имеет наклон вправо, символизируя движение вперёд и преодоление препятствий.",
+            options: [
+                { text: "Полоски под углом", correct: true },
+                { text: "Зеркальные полоски", correct: false },
+                { text: "Горизонтальные", correct: false }
+            ]
+        },
+        {
+            id: 5,
+            question: "Какой бренд зашифрован?",
+            image: "lays.jpg",
+            fact: "Lay's — один из самых узнаваемых брендов чипсов в мире. Логотип остаётся практически неизменным с 1980-х.",
+            options: [
+                { text: "Pringles", correct: false },
+                { text: "Lay's", correct: true },
+                { text: "Cheetos", correct: false }
+            ]
+        },
+        {
+            id: 6,
+            question: "Какой бренд зашифрован?",
+            image: "dove.jpg",
+            fact: "Dove позиционирует себя как бренд с философией «реальной красоты». Голубь символизирует чистоту и заботу.",
+            options: [
+                { text: "Nivea", correct: false },
+                { text: "Dove", correct: true },
+                { text: "Axe", correct: false }
+            ]
+        }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let answered = false;
+
+    // DOM элементы
+    const screens = {
+        welcome: document.getElementById('welcome-screen'),
+        quiz: document.getElementById('quiz-screen'),
+        result: document.getElementById('result-screen')
+    };
+    const progressBar = document.getElementById('progress-bar');
+    const questionCounter = document.getElementById('question-counter');
+    const questionImage = document.getElementById('q-image');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const factBox = document.getElementById('fact-box');
+    const factText = document.getElementById('fact-text');
+    const nextBtn = document.getElementById('next-btn');
+    const resultScore = document.getElementById('result-score');
+    const resultRank = document.getElementById('result-rank');
+    const resultMessage = document.getElementById('result-message');
+
+    function showScreen(name) {
+        Object.values(screens).forEach(s => s.classList.remove('active'));
+        screens[name].classList.add('active');
+    }
+
+    function startQuiz() {
+        currentQ = 0;
+        score = 0;
+        showScreen('quiz');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        answered = false;
+        nextBtn.disabled = true;
+        factBox.classList.remove('show');
+        
+        const q = quizData[currentQ];
+        questionCounter.textContent = `Вопрос ${currentQ + 1} из ${quizData.length}`;
+        progressBar.style.width = `${((currentQ) / quizData.length) * 100}%`;
+        questionText.textContent = q.question;
+        
+        // Загружаем изображение
+        if (q.image) {
+            questionImage.src = q.image;
+            questionImage.style.display = 'block';
+        } else {
+            questionImage.style.display = 'none';
+        }
+        
+        // Очистка и добавление опций
+        optionsContainer.innerHTML = '';
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `${opt.text}`;
+            btn.onclick = () => selectOption(idx, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectOption(idx, btn) {
+        if (answered) return;
+        answered = true;
+        
+        const q = quizData[currentQ];
+        const isCorrect = q.options[idx].correct;
+        
+        if (isCorrect) score++;
+        
+        // Визуальная обратная связь
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        buttons.forEach((b, i) => {
+            b.disabled = true;
+            if (q.options[i].correct) {
+                b.classList.add('correct');
+                b.innerHTML += '<span class="icon">✅</span>';
+            } else if (i === idx && !isCorrect) {
+                b.classList.add('wrong');
+                b.innerHTML += '<span class="icon">❌</span>';
+            }
+        });
+
+        // Показать факт и активировать кнопку "Далее"
+        factText.textContent = q.fact;
+        factBox.classList.add('show');
+        nextBtn.disabled = false;
+        nextBtn.textContent = currentQ === quizData.length - 1 ? 'Узнать результат' : 'Далее';
+    }
+
+    function nextQuestion() {
+        currentQ++;
+        if (currentQ < quizData.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        progressBar.style.width = '100%';
+        resultScore.textContent = `${score}/${quizData.length}`;
+        
+        let rank, message;
+        if (score === 6) {
+            rank = '🎨 Арт-директор';
+            message = 'Идеально! Вы знаете дизайн как свои пять пальцев. Пора применять знания в ArtTech!';
+        } else if (score >= 4) {
+            rank = ' Дизайнер-любитель';
+            message = 'Отличный результат! Вы на верном пути. Узнайте больше о профессии в нашей школе.';
+        } else {
+            rank = ' Новичок';
+            message = 'Не расстраивайтесь! Дизайн — это интересно. Начните с бесплатного пробного урока в ArtTech.';
+        }
+        
+        resultRank.textContent = rank;
+        resultMessage.textContent = message;
+        showScreen('result');
+    }
+
+    function restartQuiz() {
+        startQuiz();
+    }
+</script>
+
+</body>
+</html>
